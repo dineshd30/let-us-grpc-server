@@ -15,8 +15,8 @@ type Server struct {
 	proto.UnimplementedGreeterServiceServer
 }
 
-func (s *Server) SayHelloUniary(ctx context.Context, req *proto.HelloRequest) (*proto.HelloResponse, error) {
-	log.Printf("Called SayHelloUniary: %s\n", req.Message)
+func (s *Server) SayHelloUnary(ctx context.Context, req *proto.HelloRequest) (*proto.HelloResponse, error) {
+	log.Printf("Called SayHelloUnary: %s\n", req.Message)
 
 	return &proto.HelloResponse{
 		Message: fmt.Sprintf("Hello %s", req.Message),

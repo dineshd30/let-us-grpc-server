@@ -3,7 +3,7 @@ module github.com/dineshd30/let-us-grpc-server
 go 1.21.7
 
 require (
-	github.com/dineshd30/let-us-grpc-proto v0.0.0-20240212174324-74ec6aa08058
+	github.com/dineshd30/let-us-grpc-proto v0.0.0-20240215200906-d7bef27c371e
 	google.golang.org/grpc v1.61.0
 )
 
