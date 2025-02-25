@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/dineshd30/let-us-grpc-proto/proto"
@@ -16,19 +18,36 @@ type Server struct {
 }
 
 func (s *Server) SayHelloUnary(ctx context.Context, req *proto.HelloRequest) (*proto.HelloResponse, error) {
+	fmt.Println("---------------------------------------")
 	log.Printf("Called SayHelloUnary: %s\n", req.Message)
 
+	var response string
+	if CheckVillein(req.Message) {
+		response = fmt.Sprintf("Bye %s", req.Message)
+	} else {
+		response = fmt.Sprintf("Hello %s", req.Message)
+	}
+
+	log.Println("sending response:", response)
 	return &proto.HelloResponse{
-		Message: fmt.Sprintf("Hello %s", req.Message),
+		Message: response,
 	}, nil
 }
 
 func (s *Server) SayHelloServerStreaming(req *proto.NamesList, stream proto.GreeterService_SayHelloServerStreamingServer) error {
+	fmt.Println("---------------------------------------")
 	log.Println("Called SayHelloServerStreaming")
 
 	for _, name := range req.Name {
+		var response string
+		if CheckVillein(name) {
+			response = fmt.Sprintf("Bye %s", name)
+		} else {
+			response = fmt.Sprintf("Hello %s", name)
+		}
+		log.Println("sending response:", response)
 		res := &proto.HelloResponse{
-			Message: fmt.Sprintf("Hello %s", name),
+			Message: response,
 		}
 
 		if err := stream.Send(res); err != nil {
@@ -42,6 +61,7 @@ func (s *Server) SayHelloServerStreaming(req *proto.NamesList, stream proto.Gree
 }
 
 func (s *Server) SayHelloClientStreaming(stream proto.GreeterService_SayHelloClientStreamingServer) error {
+	fmt.Println("---------------------------------------")
 	log.Println("Called SayHelloClientStreaming")
 
 	var messages []string
@@ -55,12 +75,20 @@ func (s *Server) SayHelloClientStreaming(stream proto.GreeterService_SayHelloCli
 		if err != nil {
 			log.Fatalf("failed to get message from client stream: %v", err)
 		}
-		log.Printf("received message from client stream - %s", req.Message)
-		messages = append(messages, fmt.Sprintf("Hello %s", req.Message))
+
+		var response string
+		if CheckVillein(req.Message) {
+			response = fmt.Sprintf("Bye %s", req.Message)
+		} else {
+			response = fmt.Sprintf("Hello %s", req.Message)
+		}
+		log.Println("sending response:", response)
+		messages = append(messages, response)
 	}
 }
 
 func (s *Server) SayHelloBidirectionalStreaming(stream proto.GreeterService_SayHelloBidirectionalStreamingServer) error {
+	fmt.Println("---------------------------------------")
 	log.Println("Called SayHelloBidirectionalStreaming")
 
 	for {
@@ -72,12 +100,24 @@ func (s *Server) SayHelloBidirectionalStreaming(stream proto.GreeterService_SayH
 			log.Fatalf("failed to get message from client stream: %v", err)
 		}
 
-		log.Printf("received message from client stream - %s", req.Message)
+		var response string
+		if CheckVillein(req.Message) {
+			response = fmt.Sprintf("Bye %s", req.Message)
+		} else {
+			response = fmt.Sprintf("Hello %s", req.Message)
+		}
+		log.Println("sending response:", response)
 		res := &proto.HelloResponse{
-			Message: fmt.Sprintf("Hello %s", req.Message),
+			Message: response,
 		}
 		stream.Send(res)
-		log.Printf("Sent response to client - %s", res.Message)
 		time.Sleep(time.Second * 2)
 	}
+}
+
+func CheckVillein(name string) bool {
+	villains := []string{"thanos", "ultron", "loki", "galactus", "kang the conqueror", "doctor doom"}
+	return slices.IndexFunc(villains, func(c string) bool {
+		return strings.ToLower(name) == c
+	}) > -1
 }
